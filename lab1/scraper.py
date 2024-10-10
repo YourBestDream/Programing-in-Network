@@ -112,3 +112,14 @@ for product in scraped_data:
     deserialized_product = deserialize_product_custom(serialized_data)
     print(deserialized_product)
     print("\n" + "-"*50 + "\n")
+    
+# for 10
+
+# {
+#     "message": "I am basic authentatication. I like HTTP status codes. Don't forget to encode me!",
+#     "password_hint": "I mean the requested resource has been permanently moved to a new URL. What number am I?",
+#     "username_hint": "I signify an internal server error. Can you guess my number?"
+# }
+
+# username: 500
+# password: 301
