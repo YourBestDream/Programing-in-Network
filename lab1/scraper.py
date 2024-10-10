@@ -5,6 +5,8 @@ from zoneinfo import ZoneInfo
 from models import Product
 from datetime import datetime
 import pydantic
+from .utils import convert_to_eur_or_mdl, filter_price_range
+from functools import reduce
 
 url = "https://darwin.md/gadgets"
 
@@ -61,9 +63,18 @@ try:
             scraped_data.append(product)
         except pydantic.ValidationError as exc:
             raise pydantic.ValidationError(f"Validation error:{exc}")
+
+    converted_products = list(map(convert_to_eur_or_mdl, scraped_data))
         
-    for product in scraped_data:
-        print(product)
+    filtered_products = list(filter(filter_price_range, converted_products))
+
+    total_price = reduce(lambda acc, prod: acc + prod.price, filtered_products, 0)
+
+    result = {
+        "filtered_products": filtered_products,
+        "total_price": total_price,
+        "timestamp_utc": datetime.now().astimezone(ZoneInfo("UTC"))
+    }
 
 except requests.exceptions.HTTPError as exc:
     print(f"Something went wrong: {exc}")
