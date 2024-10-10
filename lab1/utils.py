@@ -14,8 +14,9 @@ def filter_price_range(product):
     if product.currency == "eur" and 100 <= product.price <= 500:
         return True
     return False
-
+# =================================
 # Connection utils
+# =================================
 
 import socket
 import ssl
@@ -113,3 +114,71 @@ def get_http_response_body(url, max_redirects=5):
     body_text = body.decode('utf-8', errors='replace')
 
     return body_text
+# =================================
+# Serialization utils
+# =================================
+
+def json_escape(s):
+    """Escape special characters for JSON."""
+    result = ''
+    for c in s:
+        if c == '"':
+            result += '\\"'
+        elif c == '\\':
+            result += '\\\\'
+        elif c == '\b':
+            result += '\\b'
+        elif c == '\f':
+            result += '\\f'
+        elif c == '\n':
+            result += '\\n'
+        elif c == '\r':
+            result += '\\r'
+        elif c == '\t':
+            result += '\\t'
+        else:
+            result += c
+    return result
+
+def xml_escape(s):
+    """Escape special characters for XML."""
+    return s.replace('&', '&amp;') \
+            .replace('<', '&lt;') \
+            .replace('>', '&gt;') \
+            .replace('"', '&quot;') \
+            .replace("'", '&apos;')
+
+def serialize_product_to_json(product):
+    """Manually serialize a Product object to a JSON-formatted string."""
+    json_str = '{\n'
+    json_str += f'    "product_name": "{json_escape(product.product_name)}",\n'
+    json_str += f'    "price": {product.price},\n'
+    json_str += f'    "currency": "{json_escape(product.currency)}",\n'
+    if product.specifications is None:
+        json_str += '    "specifications": null,\n'
+    else:
+        json_str += '    "specifications": [\n'
+        for i, spec in enumerate(product.specifications):
+            comma = ',' if i < len(product.specifications) - 1 else ''
+            json_str += f'        "{json_escape(spec)}"{comma}\n'
+        json_str += '    ],\n'
+    scrape_time_str = product.scrape_time_utc.isoformat()
+    json_str += f'    "scrape_time_utc": "{scrape_time_str}"\n'
+    json_str += '}'
+    return json_str
+
+def serialize_product_to_xml(product):
+    """Manually serialize a Product object to an XML-formatted string."""
+    xml_str = '<Product>\n'
+    xml_str += f'    <product_name>{xml_escape(product.product_name)}</product_name>\n'
+    xml_str += f'    <price>{product.price}</price>\n'
+    xml_str += f'    <currency>{xml_escape(product.currency)}</currency>\n'
+    if product.specifications is not None:
+        xml_str += '    <specifications>\n'
+        for spec in product.specifications:
+            xml_str += f'        <specification>{xml_escape(spec)}</specification>\n'
+        xml_str += '    </specifications>\n'
+    scrape_time_str = product.scrape_time_utc.isoformat()
+    xml_str += f'    <scrape_time_utc>{scrape_time_str}</scrape_time_utc>\n'
+    xml_str += '</Product>'
+    return xml_str

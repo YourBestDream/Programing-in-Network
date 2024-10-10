@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 from models import Product
 from datetime import datetime
 import pydantic
-from utils import convert_to_eur_or_mdl, filter_price_range,get_http_response_body
+from utils import convert_to_eur_or_mdl, filter_price_range,get_http_response_body, serialize_product_to_json, serialize_product_to_xml
 from functools import reduce
 
 url = "https://darwin.md/gadgets"
@@ -61,6 +61,8 @@ for item in items:
     except pydantic.ValidationError as exc:
         raise pydantic.ValidationError(f"Validation error:{exc}")
 
+# for 6
+
 converted_products = list(map(convert_to_eur_or_mdl, scraped_data))
     
 filtered_products = list(filter(filter_price_range, converted_products))
@@ -72,7 +74,20 @@ result = {
     "total_price": total_price,
     "timestamp_utc": datetime.now().astimezone(ZoneInfo("UTC"))
 }
-for product in scraped_data:
-    print(product)
+# for product in scraped_data:
+#     print(product)
     
-print(result)
+# print(result)
+
+# for 8
+
+for product in scraped_data:
+    print("Original Product object:")
+    print(product)
+    print("\nJSON representation:")
+    json_output = serialize_product_to_json(product)
+    print(json_output)
+    print("\nXML representation:")
+    xml_output = serialize_product_to_xml(product)
+    print(xml_output)
+    print("\n" + "-"*50 + "\n")
