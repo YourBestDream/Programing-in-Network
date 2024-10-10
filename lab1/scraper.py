@@ -9,7 +9,7 @@ from functools import reduce
 
 url = "https://darwin.md/gadgets"
 
-response = get_http_response_body
+response = get_http_response_body(url=url)
 
 
 scraped_data = []
@@ -72,3 +72,7 @@ result = {
     "total_price": total_price,
     "timestamp_utc": datetime.now().astimezone(ZoneInfo("UTC"))
 }
+for product in scraped_data:
+    print(product)
+    
+print(result)
