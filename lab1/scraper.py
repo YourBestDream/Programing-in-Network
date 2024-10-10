@@ -4,7 +4,15 @@ from zoneinfo import ZoneInfo
 from models import Product
 from datetime import datetime
 import pydantic
-from utils import convert_to_eur_or_mdl, filter_price_range,get_http_response_body, serialize_product_to_json, serialize_product_to_xml
+from utils import (
+    convert_to_eur_or_mdl,
+    filter_price_range,
+    get_http_response_body,
+    serialize_product_to_json,
+    serialize_product_to_xml,
+    serialize_product_custom,
+    deserialize_product_custom,
+    )
 from functools import reduce
 
 url = "https://darwin.md/gadgets"
@@ -90,4 +98,17 @@ for product in scraped_data:
     print("\nXML representation:")
     xml_output = serialize_product_to_xml(product)
     print(xml_output)
+    print("\n" + "-"*50 + "\n")
+    
+# for 9
+
+for product in scraped_data:
+    print("Original Product object:")
+    print(product)
+    print("\nCustom Serialized representation (bytes):")
+    serialized_data = serialize_product_custom(product)
+    print(serialized_data)
+    print("\nDeserialized Product object:")
+    deserialized_product = deserialize_product_custom(serialized_data)
+    print(deserialized_product)
     print("\n" + "-"*50 + "\n")

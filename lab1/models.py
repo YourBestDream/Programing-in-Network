@@ -3,7 +3,7 @@ from datetime import datetime
 
 class Product(BaseModel):
     product_name:str
-    price:int
+    price:float
     currency: str
     specifications:list | None=None
     scrape_time_utc:datetime

@@ -115,7 +115,7 @@ def get_http_response_body(url, max_redirects=5):
 
     return body_text
 # =================================
-# Serialization utils
+# JSON and XML Serialization utils
 # =================================
 
 def json_escape(s):
@@ -182,3 +182,139 @@ def serialize_product_to_xml(product):
     xml_str += f'    <scrape_time_utc>{scrape_time_str}</scrape_time_utc>\n'
     xml_str += '</Product>'
     return xml_str
+
+# =================================
+# Custom serialization utils
+# =================================
+
+import struct
+from datetime import datetime
+from models import Product
+
+def serialize_product_custom(product):
+    """Custom serialize a Product object."""
+    data = b''
+
+    # Serialize each field
+    fields = [
+        ('product_name', product.product_name),
+        ('price', product.price),
+        ('currency', product.currency),
+        ('specifications', product.specifications),
+        ('scrape_time_utc', product.scrape_time_utc)
+    ]
+
+    for field_name, value in fields:
+        # Field Name Length and Field Name
+        field_name_bytes = field_name.encode('utf-8')
+        field_name_len = len(field_name_bytes)
+        if field_name_len > 255:
+            raise ValueError(f"Field name too long: {field_name}")
+        data += struct.pack('B', field_name_len)
+        data += field_name_bytes
+
+        # Type code and Value
+        if isinstance(value, str):
+            type_code = b'S'
+            value_bytes = value.encode('utf-8')
+            value_len = len(value_bytes)
+            data += type_code
+            data += struct.pack('I', value_len)
+            data += value_bytes
+        elif isinstance(value, int):
+            type_code = b'I'
+            data += type_code
+            data += struct.pack('i', value)  # 4-byte signed integer
+        elif isinstance(value, float):
+            type_code = b'F'
+            data += type_code
+            data += struct.pack('d', value)  # 8-byte double-precision float
+        elif isinstance(value, list):
+            type_code = b'L'
+            data += type_code
+            num_elements = len(value)
+            data += struct.pack('I', num_elements)
+            for item in value:
+                item_bytes = item.encode('utf-8')
+                item_len = len(item_bytes)
+                data += struct.pack('I', item_len)
+                data += item_bytes
+        elif isinstance(value, datetime):
+            type_code = b'D'
+            value_str = value.isoformat()
+            value_bytes = value_str.encode('utf-8')
+            value_len = len(value_bytes)
+            data += type_code
+            data += struct.pack('I', value_len)
+            data += value_bytes
+        else:
+            raise TypeError(f"Unsupported field type for field {field_name}: {type(value)}")
+
+    return data
+
+def deserialize_product_custom(data):
+    """Custom deserialize a Product object from bytes."""
+    offset = 0
+    fields = {}
+
+    while offset < len(data):
+        # Read Field Name Length
+        field_name_len = struct.unpack_from('B', data, offset)[0]
+        offset += 1
+        # Read Field Name
+        field_name = data[offset:offset+field_name_len].decode('utf-8')
+        offset += field_name_len
+        # Read Type Code
+        type_code = data[offset:offset+1]
+        offset += 1
+
+        if type_code == b'S':
+            # String
+            value_len = struct.unpack_from('I', data, offset)[0]
+            offset += 4
+            value_bytes = data[offset:offset+value_len]
+            value = value_bytes.decode('utf-8')
+            offset += value_len
+        elif type_code == b'I':
+            # Integer
+            value = struct.unpack_from('i', data, offset)[0]
+            offset += 4
+        elif type_code == b'F':
+            # Float
+            value = struct.unpack_from('d', data, offset)[0]
+            offset += 8
+        elif type_code == b'L':
+            # List
+            num_elements = struct.unpack_from('I', data, offset)[0]
+            offset += 4
+            value = []
+            for _ in range(num_elements):
+                item_len = struct.unpack_from('I', data, offset)[0]
+                offset += 4
+                item_bytes = data[offset:offset+item_len]
+                item = item_bytes.decode('utf-8')
+                value.append(item)
+                offset += item_len
+        elif type_code == b'D':
+            # Datetime
+            value_len = struct.unpack_from('I', data, offset)[0]
+            offset += 4
+            value_bytes = data[offset:offset+value_len]
+            value_str = value_bytes.decode('utf-8')
+            value = datetime.fromisoformat(value_str)
+            offset += value_len
+        else:
+            raise ValueError(f"Unknown type code: {type_code}")
+
+        fields[field_name] = value
+
+    # Create Product object
+    product = Product(
+        product_name=fields.get('product_name'),
+        price=fields.get('price'),
+        currency=fields.get('currency'),
+        specifications=fields.get('specifications'),
+        scrape_time_utc=fields.get('scrape_time_utc')
+    )
+
+    return product
