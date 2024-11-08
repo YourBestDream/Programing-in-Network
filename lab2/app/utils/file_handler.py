@@ -6,8 +6,7 @@ def handle_file_upload():
     
     file = request.files['file']
     if file:
-        # Process the file
-        # (e.g., save it or process contents)
+        # Process the file (e.g., save it or process contents)
         file.save(f'uploads/{file.filename}')
         return jsonify({'message': 'File uploaded successfully'})
     return jsonify({'error': 'File upload failed'}), 400
