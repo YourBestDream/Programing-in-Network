@@ -197,10 +197,10 @@ def serialize_product_custom(product):
 
     # Serialize each field
     fields = [
-        ('product_name', product.product_name),
-        ('price', product.price),
-        ('currency', product.currency),
-        ('specifications', product.specifications),
+        ('product_name', "hello"),
+        ('price', 112),
+        ('currency', "rubles"),
+        ('specifications', ["ivbnm","fvgbhmkl"]),
         ('scrape_time_utc', product.scrape_time_utc)
     ]
 
