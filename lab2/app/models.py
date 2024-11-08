@@ -1,13 +1,12 @@
-from .utils.db import db
-from sqlalchemy import Integer, String, JSON, Column, Float, DateTime
+from . import db
 from datetime import datetime
 
 class Product(db.Model):
     __tablename__ = 'products'
 
-    id = Column(Integer, primary_key=True)
-    product_name = Column(String, nullable=False)
-    price = Column(Float, nullable=False)
-    currency = Column(String, nullable=False)
-    specifications = Column(JSON, nullable=True)  # Stores list as JSON
-    scrape_time_utc = Column(DateTime, default=datetime.utcnow)
+    id = db.Column(db.Integer, primary_key=True)
+    product_name = db.Column(db.String, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String, nullable=False)
+    specifications = db.Column(db.JSON, nullable=True)  # Stores list as JSON
+    scrape_time_utc = db.Column(db.DateTime, default=datetime.utcnow)

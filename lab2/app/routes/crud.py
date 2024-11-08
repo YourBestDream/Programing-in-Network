@@ -1,13 +1,15 @@
 from flask import Blueprint, request, jsonify
-from app.utils.db import db
+from app import db
 from app.models import Product
+from sqlalchemy import inspect
+
 
 crud_blueprint = Blueprint('crud', __name__)
 
 @crud_blueprint.route('/resource', methods=['POST'])
 def create_resource():
     data = request.json
-    resource = Product(name=data['name'], description=data['description'])
+    resource = Product(product_name=data['name'], price=data['price'], currency = data['currency'], specifications = data['specifications'])
     db.session.add(resource)
     db.session.commit()
     return jsonify({'message': 'Product created'}), 201
@@ -34,3 +36,9 @@ def delete_resource(id):
     db.session.delete(resource)
     db.session.commit()
     return jsonify({'message': 'Product deleted'})
+
+@crud_blueprint.route('/tables', methods=['GET'])
+def list_tables():
+    inspector = inspect(db.engine)
+    tables = inspector.get_table_names()
+    return jsonify({'tables': tables})
