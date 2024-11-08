@@ -16,27 +16,46 @@ def create_resource():
 
 @crud_blueprint.route('/resource', methods=['GET'])
 def get_resources():
-    offset = int(request.args.get('offset', 0))
-    limit = int(request.args.get('limit', 5))
-    resources = Product.query.offset(offset).limit(limit).all()
-    return jsonify([{'id': r.id, 'name': r.name, 'description': r.description} for r in resources])
+    resource_id = request.args.get('id')
+    name = request.args.get('name')
+    if resource_id:
+        resource = Product.query.get_or_404(resource_id)
+        return jsonify({'id': resource.id, 'name': resource.product_name, 'price': resource.price, 'currency': resource.currency, 'specifications': resource.specifications, 'timestamp': resource.scrape_time_utc})
+    elif name:
+        resources = Product.query.filter_by(name=name).all()
+        return jsonify([{'id': resource.id, 'name': resource.product_name, 'price': resource.price, 'currency': resource.currency, 'specifications': resource.specifications, 'timestamp': resource.scrape_time_utc} for r in resources])
+    else:
+        offset = int(request.args.get('offset', 0))
+        limit = int(request.args.get('limit', 5))
+        resources = Product.query.offset(offset).limit(limit).all()
+        return jsonify([{'id': resource.id, 'name': resource.product_name, 'price': resource.price, 'currency': resource.currency, 'specifications': resource.specifications, 'timestamp': resource.scrape_time_utc} for r in resources])
 
-@crud_blueprint.route('/resource/<int:id>', methods=['PUT'])
-def update_resource(id):
+@crud_blueprint.route('/resource', methods=['PUT'])
+def update_resource():
+    resource_id = request.args.get('id')
+    if not resource_id:
+        return jsonify({'error': 'ID query parameter is required'}), 400
     data = request.json
-    resource = Product.query.get_or_404(id)
-    resource.name = data['name']
-    resource.description = data['description']
+    resource = Product.query.get_or_404(resource_id)
+    resource.name = data.get('name', resource.product_name)
+    resource.price = data.get('price', resource.price)
+    resource.currency = data.get('currency', resource.currency)
+    resource.specifications = data.get('specifications', resource.specifications)
     db.session.commit()
     return jsonify({'message': 'Product updated'})
 
-@crud_blueprint.route('/resource/<int:id>', methods=['DELETE'])
-def delete_resource(id):
-    resource = Product.query.get_or_404(id)
+@crud_blueprint.route('/resource', methods=['DELETE'])
+def delete_resource():
+    resource_id = request.args.get('id')
+    if not resource_id:
+        return jsonify({'error': 'ID query parameter is required'}), 400
+    resource = Product.query.get_or_404(resource_id)
     db.session.delete(resource)
     db.session.commit()
     return jsonify({'message': 'Product deleted'})
 
+
+# for testing purposes
 @crud_blueprint.route('/tables', methods=['GET'])
 def list_tables():
     inspector = inspect(db.engine)
