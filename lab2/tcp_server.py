@@ -2,14 +2,18 @@ import socket
 import threading
 import time
 import random
-from threading import Lock
+from threading import Lock, Condition
 
 # File to be used for read/write operations
 FILE_NAME = "shared_file.txt"
 file_lock = Lock()
+read_condition = Condition()  # Condition variable to coordinate reads and writes
+pending_writes = 0  # Counter for active or pending write operations
 
 def handle_client(client_socket):
+    global pending_writes
     buffer = ""  # Buffer to accumulate data from the client
+
     try:
         while True:
             # Receive data from the client
@@ -34,14 +38,25 @@ def handle_client(client_socket):
                 if command.startswith("WRITE"):
                     try:
                         _, data = command.split(" ", 1)
+                        with read_condition:
+                            pending_writes += 1  # Indicate a write operation is in progress
                         with file_lock:
                             with open(FILE_NAME, "a") as f:
                                 f.write(data + "\n")
                         client_socket.sendall(b"Data written to file.\n")
                     except ValueError:
                         client_socket.sendall(b"Invalid WRITE command. Use: WRITE <data>\n")
+                    finally:
+                        with read_condition:
+                            pending_writes -= 1
+                            if pending_writes == 0:
+                                read_condition.notify_all()  # Notify readers that writes are done
 
                 elif command == "READ":
+                    with read_condition:
+                        # Wait for all writes to complete
+                        while pending_writes > 0:
+                            read_condition.wait()
                     with file_lock:
                         try:
                             with open(FILE_NAME, "r") as f:
