@@ -1,9 +1,7 @@
 from flask import Flask
-from flask_socketio import SocketIO
 from .utils.db import init_db
 from .routes import register_routes
-
-socketio = SocketIO()
+from .socketio_instance  import socketio
 
 def create_app():
     app = Flask(__name__)
