@@ -23,12 +23,12 @@ def get_resources():
         return jsonify({'id': resource.id, 'name': resource.product_name, 'price': resource.price, 'currency': resource.currency, 'specifications': resource.specifications, 'timestamp': resource.scrape_time_utc})
     elif name:
         resources = Product.query.filter_by(name=name).all()
-        return jsonify([{'id': resource.id, 'name': resource.product_name, 'price': resource.price, 'currency': resource.currency, 'specifications': resource.specifications, 'timestamp': resource.scrape_time_utc} for r in resources])
+        return jsonify([{'id': r.id, 'name': r.product_name, 'price': r.price, 'currency': r.currency, 'specifications': r.specifications, 'timestamp': r.scrape_time_utc} for r in resources])
     else:
         offset = int(request.args.get('offset', 0))
         limit = int(request.args.get('limit', 5))
         resources = Product.query.offset(offset).limit(limit).all()
-        return jsonify([{'id': resource.id, 'name': resource.product_name, 'price': resource.price, 'currency': resource.currency, 'specifications': resource.specifications, 'timestamp': resource.scrape_time_utc} for r in resources])
+        return jsonify([{'id': r.id, 'name': r.product_name, 'price': r.price, 'currency': r.currency, 'specifications': r.specifications, 'timestamp': r.scrape_time_utc} for r in resources])
 
 @crud_blueprint.route('/resource', methods=['PUT'])
 def update_resource():
