@@ -26,9 +26,11 @@ def create_app():
     CORS(app, supports_credentials=True)
 
     from .routes.chat import chat_blueprint
+    from .routes.file_upload import file_handler
     from .routes.crud import crud_blueprint
 
     app.register_blueprint(chat_blueprint, url_prefix='/')
+    app.register_blueprint(file_handler, url_prefix='/')
     app.register_blueprint(crud_blueprint, url_prefix='/')
 
     return app
