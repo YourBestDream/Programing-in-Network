@@ -3,6 +3,7 @@ from app import create_app, db
 import asyncio
 import websockets
 from app.routes.chat import websocket_handler
+from tcp_server import start_tcp_server
 
 my_app = create_app()
 
@@ -17,14 +18,17 @@ async def run_websocket_server():
     print("Starting WebSocket server on ws://localhost:5001")
     async with websockets.serve(websocket_handler, "0.0.0.0", 5001):
         print("WebSocket server is running...")
-        await asyncio.Future()  # Run forever
-
+        await asyncio.Future()
 
 # Run both servers in separate threads
 if __name__ == "__main__":
     # Thread for HTTP server
     http_thread = threading.Thread(target=run_http_server)
     http_thread.start()
+
+    # Thread for TCP server
+    tcp_thread = threading.Thread(target=start_tcp_server, args=("0.0.0.0", 6000))
+    tcp_thread.start()
 
     # Run WebSocket server on the main thread's event loop
     asyncio.run(run_websocket_server())
