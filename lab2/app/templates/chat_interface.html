@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat Room</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            justify-content: center;
+        }
+        #chat-container {
+            width: 300px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #messages {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #message-form {
+            display: flex;
+        }
+        #message-form input[type="text"] {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        #message-form button {
+            padding: 5px 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h3>WebSocket Chat Room</h3>
+        <div id="messages"></div>
+        <form id="message-form" style="display: none;">
+            <input type="text" id="message-input" placeholder="Type your message..." required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:5001');
+        let nickname = "";
+
+        ws.onopen = () => {
+            nickname = prompt("Enter your nickname:");
+            ws.send(JSON.stringify({ action: 'nickname', nickname: nickname }));
+        };
+
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const messageContainer = document.getElementById('messages');
+            const messageElement = document.createElement('p');
+            
+            // If server requests nickname, send it
+            if (data.action === "request_nickname") {
+                ws.send(JSON.stringify({ nickname }));
+                document.getElementById('message-form').style.display = "flex";
+                return;
+            }
+
+            messageElement.textContent = `${data.nickname}: ${data.message}`;
+            messageContainer.appendChild(messageElement);
+            messageContainer.scrollTop = messageContainer.scrollHeight; // Auto-scroll
+        };
+
+        ws.onclose = () => {
+            const messageContainer = document.getElementById('messages');
+            const messageElement = document.createElement('p');
+            messageElement.textContent = 'You have left the chat room.';
+            messageContainer.appendChild(messageElement);
+        };
+
+        document.getElementById('message-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value;
+            ws.send(JSON.stringify({ action: 'message', message }));
+            messageInput.value = '';
+        });
+
+        window.addEventListener('beforeunload', () => {
+            ws.send(JSON.stringify({ action: 'leave' }));
+            ws.close();
+        });
+    </script>
+</body>
+</html>
