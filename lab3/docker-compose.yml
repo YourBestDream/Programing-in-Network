@@ -1,0 +1,77 @@
+version: '3.8'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: pass
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: lab_db
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "user", "-d", "lab_db", "-h", "db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ftp_server:
+    image: fauria/vsftpd
+    environment:
+      FTP_USER: "user"
+      FTP_PASS: "pass"
+      PASV_ADDRESS: "0.0.0.0"
+    ports:
+      - "21:21"
+      - "21000-21010:21000-21010"
+
+  manager:
+    build: ./manager
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      FTP_HOST: ftp_server
+      LEADER_UPDATE_PORT: 4000
+    depends_on:
+      - rabbitmq
+      - ftp_server
+    ports:
+      - "4000:4000"
+
+  webserver1:
+    build: ./webserver
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: lab_db
+      MANAGER_URL: http://manager:4000/update-leader
+      NODE_ID: 1
+      PEER_IDS: "2"
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    # Expose UDP as well if needed, but in docker networking it's optional
+
+  webserver2:
+    build: ./webserver
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: lab_db
+      MANAGER_URL: http://manager:4000/update-leader
+      NODE_ID: 2
+      PEER_IDS: "1"
+    depends_on:
+      - db
+    ports:
+      - "5001:5000"
