@@ -38,6 +38,7 @@ def consume_rabbitmq():
         channel.queue_declare(queue='scraped_data')
     except Exception as e:
         print(f"Error in consume_rabbitmq:{e}")
+        return
 
     def callback(ch, method, properties, body):
         print("Callback was called")
@@ -73,9 +74,9 @@ def ftp_fetch():
             print("Reading the content of fetched_file")
             with open('fetched_file.json', 'r') as f:
                 file_data = f.read()
-            
+
             print(file_data)
-            
+
             print("Read file. Checking for leader_host...")
             with leader_lock:
                 print(f"Current leader host:{leader_host}")
@@ -87,7 +88,6 @@ def ftp_fetch():
                         print("Error posting FTP data to leader:", e)
         except Exception as e:
             print("Error fetching from FTP:", e)
-
 
 
 if __name__ == "__main__":
