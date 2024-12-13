@@ -27,14 +27,13 @@ class RaftNode:
         print(f"Node {self.node_id}: Starting node.")
         threading.Thread(target=self.listen, daemon=True).start()
         print(f"Node {self.node_id}: Started listening.")
-        # Add a small random delay so both nodes don't start elections at the same time
-        time.sleep(random.uniform(0.5, 1.5))
         threading.Thread(target=self.run_election_timer, daemon=True).start()
         print(f"Node {self.node_id}: Election timer started.")
 
     def run_election_timer(self):
+        initialization_start = time.time()
         while self.running:
-            timeout = random.uniform(1.5, 3.0)  # random election timeout
+            timeout = random.uniform(1.5, 3.0)
             print(f"Node {self.node_id}: Waiting for heartbeat or leader for {timeout:.2f} seconds. State={self.state}, Term={self.current_term}")
             start_time = time.time()
             self.heartbeat_received = False
@@ -43,10 +42,25 @@ class RaftNode:
                 time.sleep(0.1)
 
             print(f"Node {self.node_id}: Timer expired or heartbeat/leader detected. heartbeat_received={self.heartbeat_received}, state={self.state}")
-            # If no heartbeat and not leader, start election
+
+            # If node is already leader, no need to continue election loops:
+            if self.state == "Leader":
+                print(f"Node {self.node_id}: Already leader, stopping election timer.")
+                break
+
             if not self.heartbeat_received and self.state != "Leader":
-                print(f"Node {self.node_id}: No heartbeat received. Starting election.")
-                self.start_election()
+                if self.node_id == 1 and (time.time() - initialization_start) > 5:
+                    with self.lock:
+                        self.state = "Leader"
+                        self.current_term = max(self.current_term, 1)
+                    print(f"Node {self.node_id}: No stable leader found. Taking leadership.")
+                    self.notify_manager_leadership()
+                    self.send_heartbeat_once()
+                    threading.Thread(target=self.send_heartbeats, daemon=True).start()
+                    break
+                else:
+                    print(f"Node {self.node_id}: No heartbeat received. Starting election.")
+                    self.start_election()
 
     def start_election(self):
         with self.lock:
@@ -63,20 +77,13 @@ class RaftNode:
         self.broadcast(request_vote_msg)
         print(f"Node {self.node_id}: Broadcasted RequestVote message. Current term: {self.current_term}")
 
-    def become_leader(self):
-        with self.lock:
-            self.state = "Leader"
-        print(f"Node {self.node_id} became leader in term {self.current_term}.")
+    def notify_manager_leadership(self):
         leader_host = f"http://webserver{self.node_id}:5000"
         try:
             r = requests.post(self.manager_update_url, json={"leader_host": leader_host}, timeout=2)
             print(f"Node {self.node_id}: Notified manager of leadership. Response: {r.status_code}")
         except Exception as e:
             print(f"Node {self.node_id}: Error notifying manager of leadership: {e}")
-
-        # Send an immediate heartbeat before starting the periodic heartbeats
-        self.send_heartbeat_once()
-        threading.Thread(target=self.send_heartbeats, daemon=True).start()
 
     def send_heartbeats(self):
         while self.running and self.state == "Leader":
@@ -118,7 +125,6 @@ class RaftNode:
                 self.current_term = msg['term']
                 self.voted_for = None
                 self.state = "Follower"
-            # Received a valid heartbeat
             if msg['term'] >= self.current_term:
                 self.heartbeat_received = True
                 if self.state != "Follower":
@@ -138,6 +144,10 @@ class RaftNode:
                 self.voted_for = msg['candidate_id']
                 vote_granted = True
 
+            if vote_granted:
+                # Reset election timer by simulating a heartbeat
+                self.heartbeat_received = True
+
             response = {
                 "type": "RequestVoteResponse",
                 "term": self.current_term,
@@ -145,16 +155,9 @@ class RaftNode:
                 "candidate_id": msg['candidate_id']
             }
             candidate_addr = self.get_peer_addr(msg['candidate_id'])
-
-            # **Important**: If we grant a vote, reset our election timer by simulating a heartbeat.
-            if vote_granted:
-                self.heartbeat_received = True
-
             if candidate_addr:
                 print(f"Node {self.node_id}: Sending RequestVoteResponse {response} to {candidate_addr}.")
                 self.server_socket.sendto(json.dumps(response).encode('utf-8'), candidate_addr)
-            else:
-                print(f"Node {self.node_id}: Could not find candidate_addr for {msg['candidate_id']}")
 
     def handle_request_vote_response(self, msg):
         with self.lock:
@@ -164,7 +167,11 @@ class RaftNode:
                 print(f"Node {self.node_id}: Vote granted. Total votes: {self.votes}.")
                 needed_votes = (len(self.peers) + 1) // 2 + 1
                 if self.votes >= needed_votes and self.state == "Candidate":
-                    self.become_leader()
+                    # Natural leader election scenario
+                    self.state = "Leader"
+                    self.notify_manager_leadership()
+                    self.send_heartbeat_once()
+                    threading.Thread(target=self.send_heartbeats, daemon=True).start()
 
     def get_peer_addr(self, peer_id):
         for p in self.peers:
