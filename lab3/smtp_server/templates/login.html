@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            /* background-color: #ffffffdd; */
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .header{
+            font-size: 20px;
+            font-weight: 650;
+        }
+        .otp-container{
+            text-align: center;
+        }
+        .otp {
+            align-self: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: #ddbe34;
+        }
+        .footer {
+            font-size: 12px;
+            color: #999;
+            margin-top: 30px;
+        }
+        .divider{
+            width:100%;
+            height: 1px;
+            background-color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p class="header">Welcome back. Your OTP code is:</p>
+        <div class="otp-container">
+            <p class="otp">{{ otp }}</p>
+        </div>
+        <div class="divider"></div>
+        <div class="footer">
+            <p>Please do not reply to this email as it is not monitored.</p>
+            <p>Thank you.</p>
+        </div>
+    </div>
+</body>
+</html>

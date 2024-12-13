@@ -1,0 +1,118 @@
+{
+    "filtered_products": [
+        {
+            "product_name": "Laptop Acer Extensa EX215-54 (NX.EGJEP.00E)",
+            "price": 394.6842105263158,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.174414+00:00"
+        },
+        {
+            "product_name": "Laptop Acer Aspire 3 A315-23-R3Q4 (NX.HVTEP.010)",
+            "price": 431.52631578947364,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.201424+00:00"
+        },
+        {
+            "product_name": "Laptop Acer Aspire 3 A315-56 (NX.HS5EU.00D)",
+            "price": 410.4736842105263,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.202426+00:00"
+        },
+        {
+            "product_name": "Laptop Acer Extensa EX215-32 (NX.EGNEP.001)",
+            "price": 236.78947368421052,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.202426+00:00"
+        },
+        {
+            "product_name": "Laptop HP 255 G9 (6S6F5EA)",
+            "price": 368.36842105263156,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.205413+00:00"
+        },
+        {
+            "product_name": "Laptop HP 255 G9 (6F293EA)",
+            "price": 299.9473684210526,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.208412+00:00"
+        },
+        {
+            "product_name": "Laptop HP 255 G8 (5N3L2EA)",
+            "price": 315.7368421052631,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.208412+00:00"
+        },
+        {
+            "product_name": "Laptop HP 250 G9 (6F1Z7EA)",
+            "price": 315.7368421052631,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.208412+00:00"
+        },
+        {
+            "product_name": "Laptop Acer Aspire A315-510P (NX.KDHEU.00B)",
+            "price": 447.31578947368416,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.210416+00:00"
+        },
+        {
+            "product_name": "Laptop Acer Aspire Lite AL15-41 (UN.431SI.278)",
+            "price": 468.36842105263156,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.210416+00:00"
+        },
+        {
+            "product_name": "Laptop Acer Aspire Lite AL15-41 (UN.431SI.P23)",
+            "price": 447.31578947368416,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.210416+00:00"
+        },
+        {
+            "product_name": "Laptop Acer Extensa EX215-32 (NX.EGNEP.001), 12GB",
+            "price": 268.36842105263156,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.210416+00:00"
+        },
+        {
+            "product_name": "Laptop Acer Extensa EX215-55 Steel Gray (NX.EGYEU.01G)",
+            "price": 342.05263157894734,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.211413+00:00"
+        },
+        {
+            "product_name": "Laptop ASUS B1502CVA-BQ0109 ExpertBook",
+            "price": 421.0,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.220420+00:00"
+        },
+        {
+            "product_name": "Laptop ASUS E1404FA-EB045 VivoBook Go",
+            "price": 473.6315789473684,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.220420+00:00"
+        },
+        {
+            "product_name": "Laptop ASUS E1504FA-L1285 VivoBook Go",
+            "price": 499.9473684210526,
+            "currency": "eur",
+            "specifications": null,
+            "scrape_time_utc": "2024-12-13T02:24:44.220420+00:00"
+        }
+    ],
+    "total_price": 6141.263157894737,
+    "timestamp_utc": "2024-12-13T02:24:44.224415+00:00"
+}

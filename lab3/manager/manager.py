@@ -29,11 +29,18 @@ def update_leader():
 
 def consume_rabbitmq():
     # Connect to RabbitMQ
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
-    channel = connection.channel()
-    channel.queue_declare(queue='scraped_data')
+    try:
+        credentials = pika.PlainCredentials('user', 'pass')  # match docker-compose credentials
+        connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials)
+        )
+        channel = connection.channel()
+        channel.queue_declare(queue='scraped_data')
+    except Exception as e:
+        print(f"Error in consume_rabbitmq:{e}")
 
     def callback(ch, method, properties, body):
+        print("Callback was called")
         data_str = body.decode('utf-8')
         with leader_lock:
             if leader_host:
@@ -47,21 +54,33 @@ def consume_rabbitmq():
     channel.start_consuming()
 
 def ftp_fetch():
+    print("FTP function started at least or what?")
     while True:
-        time.sleep(30)
+        print("Entering while loop...")
+        time.sleep(10)
         print("Manager: Fetching file from FTP...")
         try:
+            print(f"Connecting to FTP server {FTP_HOST}...")
             ftp = FTP(FTP_HOST)
+            print("FTP object created. Attempting login...")
             ftp.login('user', 'pass')
+            print("Login successful. Fetching file...")
             with open('fetched_file.json', 'wb') as f:
                 ftp.retrbinary('RETR data.json', f.write)
+            print("File retrieved. Closing connection...")
             ftp.quit()
 
+            print("Reading the content of fetched_file")
             with open('fetched_file.json', 'r') as f:
                 file_data = f.read()
-
+            
+            print(file_data)
+            
+            print("Read file. Checking for leader_host...")
             with leader_lock:
+                print(f"Current leader host:{leader_host}")
                 if leader_host:
+                    print(f"Sending data to leader: {leader_host}")
                     try:
                         requests.post(f"{leader_host}/resource", json={"data": file_data})
                     except Exception as e:
@@ -70,12 +89,16 @@ def ftp_fetch():
             print("Error fetching from FTP:", e)
 
 
+
 if __name__ == "__main__":
-    # Start rabbitmq consumer in a thread
+    print("Manager: Waiting before starting threads...")
+    time.sleep(25)
+    print("Manager: Starting threads now.")
+    print("Manager: Started consumer thread")
     t_rabbit = threading.Thread(target=consume_rabbitmq, daemon=True)
     t_rabbit.start()
 
-    # Start ftp fetcher in a thread
+    print("Manager: Starting ftp thread")
     t_ftp = threading.Thread(target=ftp_fetch, daemon=True)
     t_ftp.start()
 

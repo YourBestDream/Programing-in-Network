@@ -8,7 +8,7 @@ app = create_app()
 def run_http_server():
     with app.app_context():
         db.create_all()
-    app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
+    app.run(host="0.0.0.0", port=5000, debug=False)
 
 if __name__ == "__main__":
     node_id = int(os.getenv("NODE_ID", "1"))
